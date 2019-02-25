@@ -1,17 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <LangVersion>latest</LangVersion>
-    
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>generatepkgdiff</ToolCommandName>
-  </PropertyGroup>
-	
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>netcoreapp2.1</TargetFramework>
+
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+		<LangVersion>latest</LangVersion>
+
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>generatepkgdiff</ToolCommandName>
+
+		<GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
+	</PropertyGroup>
+
 	<PropertyGroup>
 		<PackageProjectUrl>https://github.com/nventive/Uno.PackageDiff</PackageProjectUrl>
 		<PackageIconUrl>https://nv-assets.azurewebsites.net/logos/uno.png</PackageIconUrl>
@@ -19,12 +21,12 @@
 		<Description>This package provides a nuget package diffing CLI tool.</Description>
 		<Copyright>Copyright (C) 2015-2019 nventive inc. - all rights reserved</Copyright>
 	</PropertyGroup>
-	
-  <ItemGroup>
-    <PackageReference Include="Mono.Cecil" Version="0.10.3" />
-    <PackageReference Include="Mono.Options" Version="5.3.0.1" />
-    <PackageReference Include="NuGet.Protocol" Version="4.9.3" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Mono.Cecil" Version="0.10.3" />
+		<PackageReference Include="Mono.Options" Version="5.3.0.1" />
+		<PackageReference Include="NuGet.Protocol" Version="4.9.3" />
+		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+	</ItemGroup>
 
 </Project>
