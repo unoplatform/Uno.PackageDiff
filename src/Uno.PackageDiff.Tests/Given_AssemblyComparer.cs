@@ -9,28 +9,19 @@ namespace Uno.PackageDiff.Tests
 	[TestClass]
 	public class Given_AssemblyComparer
 	{
-		private (AssemblyDefinition baseAssembly, AssemblyDefinition targetAssembly) BuildAssemblies([CallerMemberName] string testName = null)
-		{
-			var baseFile = GetType().Assembly.GetManifestResourceNames().FirstOrDefault(f => f.Contains(testName + ".base.cs"));
-			var targetFile = GetType().Assembly.GetManifestResourceNames().FirstOrDefault(f => f.Contains(testName + ".target.cs"));
+		private readonly TestBuilder _builder;
 
-			return (BuildDefinition(baseFile), BuildDefinition(targetFile));
-		}
-
-		AssemblyDefinition BuildDefinition(string name)
+		public Given_AssemblyComparer()
 		{
-			using(var s = new StreamReader(this.GetType().Assembly.GetManifestResourceStream(name)))
-			{
-				return ModuleBuilder.BuildAssemblyDefinition(s.ReadToEnd());
-			}
+			_builder = new TestBuilder(GetType());
 		}
 
 		[TestMethod]
 		public void When_EmptyAssembly()
 		{
-			var (baseAssembly, targetAssembly) = BuildAssemblies();
+			var context = _builder.BuildAssemblies();
 
-			var r = AssemblyComparer.CompareTypes(baseAssembly, targetAssembly);
+			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.AreEqual(0, r.InvalidTypes.Length);
 			Assert.AreEqual(0, r.InvalidEvents.Length);
@@ -42,9 +33,9 @@ namespace Uno.PackageDiff.Tests
 		[TestMethod]
 		public void When_Target_MissingProperty()
 		{
-			var (baseAssembly, targetAssembly) = BuildAssemblies();
+			var context = _builder.BuildAssemblies();
 
-			var r = AssemblyComparer.CompareTypes(baseAssembly, targetAssembly);
+			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.AreEqual(0, r.InvalidTypes.Length);
 			Assert.AreEqual(0, r.InvalidEvents.Length);
