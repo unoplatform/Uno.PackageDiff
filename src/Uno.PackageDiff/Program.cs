@@ -54,8 +54,9 @@ namespace Uno.PackageDiff
 										 Target = targetAssemblyPath
 									 };
 
-				var ignoreSet = ParseDiffIgnore(diffIgnoreFile, source.nuspecReader.GetVersion().ToString());
+				var ignoreSet = DiffIgnore.ParseDiffIgnore(diffIgnoreFile, source.nuspecReader.GetVersion().ToString());
 
+				bool failures = false;
 				using (var writer = new StreamWriter(outputFile))
 				{
 					writer.WriteLine($"Comparison report for {source.nuspecReader.GetId()} **{source.nuspecReader.GetVersion()}** with {target.nuspecReader.GetId()} **{target.nuspecReader.GetVersion()}**");
@@ -70,14 +71,14 @@ namespace Uno.PackageDiff
 
 							Console.WriteLine($"Comparing {sourceFile} and {targetFile}");
 
-							CompareAssemblies(writer, sourceFile, targetFile);
+							failures |= CompareAssemblies(writer, sourceFile, targetFile, ignoreSet);
 						}
 					}
 				}
 
 				Console.WriteLine($"Done comparing.");
 
-				return 0;
+				return failures ? 1 : 0;
 			}
 			finally
 			{
@@ -86,7 +87,7 @@ namespace Uno.PackageDiff
 			}
 		}
 
-		public static void CompareAssemblies(StreamWriter writer, string sourceFile, string targetFile)
+		public static bool CompareAssemblies(StreamWriter writer, string sourceFile, string targetFile, IgnoreSet ignoreSet)
 		{
 			using(var source = ReadModule(sourceFile))
 			using(var target = ReadModule(targetFile))
@@ -94,24 +95,31 @@ namespace Uno.PackageDiff
 				writer.WriteLine($"## {Path.GetFileName(sourceFile)}");
 				var results = AssemblyComparer.CompareTypes(source, target);
 
-				ReportMissingTypes(writer, results);
-				ReportMethods(writer, results);
-				ReportEvents(writer, results);
-				ReportFields(writer, results);
-				ReportProperties(writer, results);
+				ReportMissingTypes(writer, results, ignoreSet);
+				ReportMethods(writer, results, ignoreSet);
+				ReportEvents(writer, results, ignoreSet);
+				ReportFields(writer, results, ignoreSet);
+				ReportProperties(writer, results, ignoreSet);
+
+				return ReportAnalyzer.IsDiffFailed(results, ignoreSet);
 			}
 		}
 
-		private static void ReportMissingTypes(StreamWriter writer, ComparisonResult results)
+		private static void ReportMissingTypes(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			writer.WriteLine("### {0} missing types:", results.InvalidTypes.Length);
 			foreach(var invalidType in results.InvalidTypes)
 			{
-				writer.WriteLine("\t* `{0}`", invalidType.FullName);
+				var strike = ignoreSet.Types
+					.Select(t => t.FullName)
+					.Contains(invalidType.ToSignature())
+					? "~~" : "";
+
+				writer.WriteLine($"\t* {strike}`{invalidType.ToSignature()}`{strike}");
 			}
 		}
 
-		private static void ReportProperties(StreamWriter writer, ComparisonResult results)
+		private static void ReportProperties(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var groupedProperties = from method in results.InvalidProperties
 								group method by method.DeclaringType.FullName into types
@@ -124,12 +132,17 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var property in updatedType)
 				{
-					writer.WriteLine("\t* ``{0}``", property);
+					var strike = ignoreSet.Properties
+						.Select(t => t.FullName)
+						.Contains(property.ToSignature())
+						? "~~" : "";
+
+					writer.WriteLine($"\t* {strike}``{property.ToSignature()}``{strike}");
 				}
 			}
 		}
 
-		private static void ReportFields(StreamWriter writer, ComparisonResult results)
+		private static void ReportFields(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var groupedFields = from method in results.InvalidFields
 								group method by method.DeclaringType.FullName into types
@@ -142,12 +155,17 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var field in updatedType)
 				{
-					writer.WriteLine("\t* ``{0}``", field);
+					var strike = ignoreSet.Fields
+						.Select(t => t.FullName)
+						.Contains(field.ToSignature())
+						? "~~" : "";
+
+					writer.WriteLine($"\t* {strike}``{field.ToSignature()}``{strike}");
 				}
 			}
 		}
 
-		private static void ReportMethods(StreamWriter writer, ComparisonResult results)
+		private static void ReportMethods(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var groupedMethods = from method in results.InvalidMethods
 								 group method by method.DeclaringType.FullName into types
@@ -160,12 +178,19 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var method in updatedType)
 				{
-					writer.WriteLine("\t* ``{0}``", ExpandMethod(method));
+					var methodSignature = method.ToSignature();
+
+					var strike = ignoreSet.Methods
+						.Select(t => t.FullName)
+						.Contains(methodSignature)
+						? "~~" : "";
+
+					writer.WriteLine($"\t* {strike}``{methodSignature}``{strike}");
 				}
 			}
 		}
 
-		private static void ReportEvents(StreamWriter writer, ComparisonResult results)
+		private static void ReportEvents(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var groupedEvents = from method in results.InvalidEvents
 								 group method by method.DeclaringType.FullName into types
@@ -178,15 +203,14 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var evt in updatedType)
 				{
-					writer.WriteLine("\t* ``{0}``", evt);
+					var strike = ignoreSet.Events
+						.Select(t => t.FullName)
+						.Contains(evt.ToString())
+						? "~~" : "";
+
+					writer.WriteLine($"\t* {strike}``{evt.ToSignature()}``{strike}");
 				}
 			}
-		}
-
-		private static string ExpandMethod(MethodDefinition method)
-		{
-			var parms = string.Join(", ", method.Parameters.Select(p => $"{p.ParameterType} {p.Name}"));
-			return $"{method.ReturnType} {method.DeclaringType}.{method.Name}({parms})";
 		}
 
 		private static AssemblyDefinition ReadModule(string path)
@@ -194,25 +218,6 @@ namespace Uno.PackageDiff
 			var resolver = new DefaultAssemblyResolver();
 
 			return AssemblyDefinition.ReadAssembly(path, new ReaderParameters() { AssemblyResolver = resolver });
-		}
-
-		private static IgnoreSet ParseDiffIgnore(string diffIgnoreFile, string baseVersion)
-		{
-			if(!string.IsNullOrEmpty(diffIgnoreFile))
-			{
-				using(var file = File.OpenRead(diffIgnoreFile))
-				{
-					var dcs = new DataContractSerializer(typeof(DiffIgnore));
-					var diffIgnore = (DiffIgnore)dcs.ReadObject(file);
-
-					if(diffIgnore.IgnoreSets.FirstOrDefault(s => s.BaseVersion == baseVersion) is IgnoreSet set)
-					{
-						return set;
-					}
-				}
-			}
-
-			return null;
 		}
 
 		private static async Task<(string path, NuspecReader nuspecReader)> GetPackage(string packagePath)

@@ -14,6 +14,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Sources\Given_ReportAnalyzer_When_Empty_IgnoreSet.base.cs" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_Empty_IgnoreSet.target.cs" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.base.cs" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.diff.xml" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.target.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
 		<PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
 		<PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
