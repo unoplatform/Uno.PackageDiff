@@ -56,7 +56,7 @@ namespace Uno.PackageDiff
 
 				var ignoreSet = DiffIgnore.ParseDiffIgnore(diffIgnoreFile, source.nuspecReader.GetVersion().ToString());
 
-				bool failures = false;
+				bool differences = false;
 				using (var writer = new StreamWriter(outputFile))
 				{
 					writer.WriteLine($"Comparison report for {source.nuspecReader.GetId()} **{source.nuspecReader.GetVersion()}** with {target.nuspecReader.GetId()} **{target.nuspecReader.GetVersion()}**");
@@ -71,14 +71,15 @@ namespace Uno.PackageDiff
 
 							Console.WriteLine($"Comparing {sourceFile} and {targetFile}");
 
-							failures |= CompareAssemblies(writer, sourceFile, targetFile, ignoreSet);
+							differences |= CompareAssemblies(writer, sourceFile, targetFile, ignoreSet);
 						}
 					}
 				}
 
-				Console.WriteLine($"Done comparing.");
+				var withDifferences = differences ? ", with differences" : "";
+				Console.WriteLine($"Done comparing{withDifferences}.");
 
-				return failures ? 1 : 0;
+				return differences ? 1 : 0;
 			}
 			finally
 			{
@@ -115,7 +116,7 @@ namespace Uno.PackageDiff
 					.Contains(invalidType.ToSignature())
 					? "~~" : "";
 
-				writer.WriteLine($"\t* {strike}`{invalidType.ToSignature()}`{strike}");
+				writer.WriteLine($"* {strike}`{invalidType.ToSignature()}`{strike}");
 			}
 		}
 
