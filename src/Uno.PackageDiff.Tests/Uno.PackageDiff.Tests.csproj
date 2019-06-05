@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<TargetFramework>netcoreapp2.1</TargetFramework>
 
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
@@ -14,6 +14,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Sources\Given_AssemblyComparer_When_Target_Internal.base.cs" />
+	  <None Remove="Sources\Given_AssemblyComparer_When_Target_Internal.target.cs" />
 	  <None Remove="Sources\Given_ReportAnalyzer_When_Empty_IgnoreSet.base.cs" />
 	  <None Remove="Sources\Given_ReportAnalyzer_When_Empty_IgnoreSet.target.cs" />
 	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.base.cs" />

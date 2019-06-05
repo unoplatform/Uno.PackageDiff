@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Serialization;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 
 namespace Uno.PackageDiff.Tests
