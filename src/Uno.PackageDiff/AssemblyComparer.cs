@@ -68,12 +68,19 @@ namespace Uno.PackageDiff
 			var q1 = from type in existingTypes
 					 from targetMethod in type.targetType.Methods
 					 let targetMethodParams = getMethodParamsSignature(targetMethod)
-					 where targetMethod.IsPublic
-					 where !type.sourceType.Methods.Any(m => m.Name == targetMethod.Name && targetMethodParams.SequenceEqual(getMethodParamsSignature(m)))
+					 where IsVisibleMethod(targetMethod)
+					 where !type.sourceType.Methods
+						.Any(sourceMethod =>
+						sourceMethod.Name == targetMethod.Name
+						&& targetMethodParams.SequenceEqual(getMethodParamsSignature(sourceMethod))
+						&& IsVisibleMethod(sourceMethod))
 					 select targetMethod;
 
 			return q1.ToArray();
 		}
+
+		private static bool IsVisibleMethod(MethodDefinition targetMethod)
+			=> targetMethod != null ? targetMethod.IsPublic || targetMethod.IsFamily : false;
 
 		private static string ExpandMethod(MethodDefinition method)
 		{
@@ -85,8 +92,12 @@ namespace Uno.PackageDiff
 		{
 			var q1 = from type in existingTypes
 					 from targetEvent in type.targetType.Events
-					 where targetEvent.AddMethod?.IsPublic ?? false
-					 where !type.sourceType.Events.Any(p => p.Name == targetEvent.Name && p.EventType.FullName != targetEvent.FullName)
+					 where IsVisibleMethod(targetEvent.AddMethod)
+					 where !type.sourceType.Events
+						.Any(sourceEvent =>
+							sourceEvent.Name == targetEvent.Name
+							&& sourceEvent.EventType.FullName != targetEvent.FullName
+							&& IsVisibleMethod(sourceEvent.AddMethod))
 					 select targetEvent;
 
 			return q1.ToArray();
@@ -96,7 +107,7 @@ namespace Uno.PackageDiff
 		{
 			var q1 = from type in existingTypes
 					 from targetField in type.targetType.Fields
-					 where targetField.IsPublic
+					 where targetField.IsPublic || targetField.IsFamily
 					 where !type.sourceType.Fields.Any(p => p.Name == targetField.Name && p.FieldType.FullName == targetField.FieldType.FullName)
 					 select targetField;
 
@@ -107,8 +118,12 @@ namespace Uno.PackageDiff
 		{
 			var q1 = from type in existingTypes
 					 from targetProp in type.targetType.Properties
-					 where targetProp.GetMethod?.IsPublic ?? false
-					 where !type.sourceType.Properties.Any(p => p.Name == targetProp.Name && p.PropertyType.FullName == targetProp.PropertyType.FullName)
+					 where IsVisibleMethod(targetProp.GetMethod)
+					 where !type.sourceType.Properties
+						.Any(sourceProperty =>
+							sourceProperty.Name == targetProp.Name
+							&& sourceProperty.PropertyType.FullName == targetProp.PropertyType.FullName
+							&& IsVisibleMethod(sourceProperty.GetMethod))
 					 select targetProp;
 
 			return q1.ToArray();
