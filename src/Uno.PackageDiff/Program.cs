@@ -79,6 +79,12 @@ namespace Uno.PackageDiff
 				var withDifferences = differences ? ", with differences" : "";
 				Console.WriteLine($"Done comparing{withDifferences}.");
 
+				if (differences)
+				{
+					Console.WriteLine(@"Error : Build failed with unexpected differences. Modifications to the public API introduce binary breaking changes and should be avoided.");
+					Console.WriteLine("If these modifications were expected and intended, see https://github.com/nventive/Uno.PackageDiff#how-to-provide-an-ignore-set on how to ignore them.");
+				}
+
 				return differences ? 1 : 0;
 			}
 			finally
@@ -111,10 +117,16 @@ namespace Uno.PackageDiff
 			writer.WriteLine("### {0} missing types:", results.InvalidTypes.Length);
 			foreach(var invalidType in results.InvalidTypes)
 			{
-				var strike = ignoreSet.Types
+				var isIgnored = ignoreSet.Types
 					.Select(t => t.FullName)
-					.Contains(invalidType.ToSignature())
+					.Contains(invalidType.ToSignature());
+				var strike = isIgnored
 					? "~~" : "";
+
+				if (!isIgnored)
+				{
+					Console.WriteLine($"Error : Removed type {invalidType.ToSignature()} not found in ignore set.");
+				}
 
 				writer.WriteLine($"* {strike}`{invalidType.ToSignature()}`{strike}");
 			}
@@ -133,10 +145,16 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var property in updatedType)
 				{
-					var strike = ignoreSet.Properties
+					var isIgnored = ignoreSet.Properties
 						.Select(t => t.FullName)
-						.Contains(property.ToSignature())
+						.Contains(property.ToSignature());
+					var strike = isIgnored
 						? "~~" : "";
+
+					if(!isIgnored)
+					{
+						Console.WriteLine($"Error : Removed property {property.ToSignature()} not found in ignore set.");
+					}
 
 					writer.WriteLine($"\t* {strike}``{property.ToSignature()}``{strike}");
 				}
@@ -156,10 +174,16 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var field in updatedType)
 				{
-					var strike = ignoreSet.Fields
+					var isIgnored = ignoreSet.Fields
 						.Select(t => t.FullName)
-						.Contains(field.ToSignature())
+						.Contains(field.ToSignature());
+					var strike = isIgnored
 						? "~~" : "";
+
+					if(!isIgnored)
+					{
+						Console.WriteLine($"Error : Removed field {field.ToSignature()} not found in ignore set.");
+					}
 
 					writer.WriteLine($"\t* {strike}``{field.ToSignature()}``{strike}");
 				}
@@ -181,10 +205,16 @@ namespace Uno.PackageDiff
 				{
 					var methodSignature = method.ToSignature();
 
-					var strike = ignoreSet.Methods
+					var isIgnored = ignoreSet.Methods
 						.Select(t => t.FullName)
-						.Contains(methodSignature)
+						.Contains(methodSignature);
+					var strike = isIgnored
 						? "~~" : "";
+
+					if(!isIgnored)
+					{
+						Console.WriteLine($"Error : Removed method {method.ToSignature()} not found in ignore set.");
+					}
 
 					writer.WriteLine($"\t* {strike}``{methodSignature}``{strike}");
 				}
@@ -204,10 +234,16 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var evt in updatedType)
 				{
-					var strike = ignoreSet.Events
+					var isIgnored = ignoreSet.Events
 						.Select(t => t.FullName)
-						.Contains(evt.ToString())
+						.Contains(evt.ToString());
+					var strike = isIgnored
 						? "~~" : "";
+
+					if(!isIgnored)
+					{
+						Console.WriteLine($"Error : Removed event {evt.ToSignature()} not found in ignore set.");
+					}
 
 					writer.WriteLine($"\t* {strike}``{evt.ToSignature()}``{strike}");
 				}
