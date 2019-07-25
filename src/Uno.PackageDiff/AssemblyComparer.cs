@@ -80,7 +80,7 @@ namespace Uno.PackageDiff
 		}
 
 		private static bool IsVisibleMethod(MethodDefinition targetMethod)
-			=> targetMethod != null ? targetMethod.IsPublic || targetMethod.IsFamily : false;
+			=> (targetMethod != null && (targetMethod.IsPublic || targetMethod.IsFamily)) && !targetMethod.IsVirtual;
 
 		private static string ExpandMethod(MethodDefinition method)
 		{

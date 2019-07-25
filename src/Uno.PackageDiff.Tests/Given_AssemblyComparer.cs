@@ -31,6 +31,20 @@ namespace Uno.PackageDiff.Tests
 		}
 
 		[TestMethod]
+		public void When_DerivingClasses()
+		{
+			var context = _builder.BuildAssemblies();
+
+			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.AreEqual(0, r.InvalidTypes.Length);
+			Assert.AreEqual(0, r.InvalidEvents.Length);
+			Assert.AreEqual(0, r.InvalidFields.Length);
+			Assert.AreEqual(0, r.InvalidMethods.Length);
+			Assert.AreEqual(0, r.InvalidProperties.Length);
+		}
+
+		[TestMethod]
 		public void When_Target_MissingProperty()
 		{
 			var context = _builder.BuildAssemblies();
@@ -44,12 +58,12 @@ namespace Uno.PackageDiff.Tests
 			Assert.AreEqual(1, r.InvalidProperties.Length);
 			Assert.AreEqual("MyProperty", r.InvalidProperties.First().Name);
 		}
-		 
+
 		[TestMethod]
 		public void When_Target_Internal()
 		{
 			var context = _builder.BuildAssemblies();
-			
+
 			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.AreEqual(0, r.InvalidTypes.Length);
