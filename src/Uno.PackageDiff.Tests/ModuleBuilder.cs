@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Host;
 
 namespace Uno.PackageDiff.Tests
@@ -23,6 +24,13 @@ namespace Uno.PackageDiff.Tests
 			var stream = new MemoryStream();
 			var emitResult = compilation.Emit(stream);
 
+			if(!emitResult.Success)
+			{
+				var msg = string.Join("\n", emitResult.Diagnostics
+					.Where(d => d.Severity == DiagnosticSeverity.Error)
+					.Select(d => d.GetMessage()));
+				throw new InvalidOperationException($"Unable to compile source code.  Errors:\n{msg}");
+			}
 			stream.Position = 0;
 
 			return Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);

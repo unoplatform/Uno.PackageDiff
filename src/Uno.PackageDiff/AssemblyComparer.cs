@@ -69,18 +69,19 @@ namespace Uno.PackageDiff
 					 from targetMethod in type.targetType.Methods
 					 let targetMethodParams = getMethodParamsSignature(targetMethod)
 					 where IsVisibleMethod(targetMethod)
+					 where !targetMethod.IsVirtual || !targetMethod.IsReuseSlot
 					 where !type.sourceType.Methods
 						.Any(sourceMethod =>
 						sourceMethod.Name == targetMethod.Name
 						&& targetMethodParams.SequenceEqual(getMethodParamsSignature(sourceMethod))
-						&& IsVisibleMethod(sourceMethod))
+						&& IsVisibleMethod(sourceMethod)
+						&& targetMethod.IsVirtual == sourceMethod.IsVirtual)
 					 select targetMethod;
 
 			return q1.ToArray();
 		}
 
-		private static bool IsVisibleMethod(MethodDefinition targetMethod)
-			=> targetMethod != null ? targetMethod.IsPublic || targetMethod.IsFamily : false;
+		private static bool IsVisibleMethod(MethodDefinition targetMethod) => targetMethod != null && (targetMethod.IsPublic || targetMethod.IsFamily);
 
 		private static string ExpandMethod(MethodDefinition method)
 		{
