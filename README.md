@@ -7,7 +7,7 @@ published nuget package (in nuget.org) and a local NuGet package.
 
 ## Installing
 
-Run the following command from commandline (requires .NET Core 2.1 installed):
+Run the following command from command line (requires .NET Core 2.1 installed):
 
 ```
 dotnet tool install --global Uno.PackageDiff
@@ -32,22 +32,22 @@ Here's the format:
   <IgnoreSets>
     <IgnoreSet baseVersion="1.0.0">
       <Types>
-        <Member fullName="MyNamespace.MyMissingClass"/>
+        <Member fullName="MyNamespace.MyMissingClass" />
       </Types>
       <Properties>
-        <Member fullName="MyNamespace.MyClass.MyProperty"/>
+        <Member fullName="MyNamespace.MyClass.MyProperty" />
       </Properties>
       <Fields>
-        <Member fullName="MyNamespace.MyClass.myField"/>
+        <Member fullName="MyNamespace.MyClass.myField" />
       </Fields>
       <Events>
-        <Member fullName="MyNamespace.MyClass.MyEvent"/>
+        <Member fullName="MyNamespace.MyClass.MyEvent" />
       </Events>
       <Methods>
-        <Member fullName="MyNamespace.MyClass.MyMethod"/>
+        <Member fullName="MyNamespace.MyClass.MyMethod" />
       </Methods>
       <Methods>
-        <Member fullName="MyNamespace.MyClass.MyMethod"/>
+        <Member fullName="MyNamespace.MyClass.MyMethod" />
       </Methods>
     </IgnoreSet>
   </IgnoreSets>
