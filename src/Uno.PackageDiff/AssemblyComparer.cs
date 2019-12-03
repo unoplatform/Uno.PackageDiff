@@ -73,6 +73,7 @@ namespace Uno.PackageDiff
 					 where !type.sourceType.Methods
 						.Any(sourceMethod =>
 						sourceMethod.Name == targetMethod.Name
+						&& targetMethod.ReturnType.FullName == sourceMethod.ReturnType.FullName
 						&& targetMethodParams.SequenceEqual(getMethodParamsSignature(sourceMethod))
 						&& IsVisibleMethod(sourceMethod)
 						&& targetMethod.IsVirtual == sourceMethod.IsVirtual)

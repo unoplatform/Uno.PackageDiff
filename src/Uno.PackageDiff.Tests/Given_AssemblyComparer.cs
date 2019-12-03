@@ -81,5 +81,22 @@ namespace Uno.PackageDiff.Tests
 			Assert.AreEqual("System.Void Uno.PackageDiff.Tests.Sources.When_Target_Internal::set_MyProperty(System.Int32)", r.InvalidMethods.ElementAt(1).ToString());
 			Assert.AreEqual("System.Void Uno.PackageDiff.Tests.Sources.When_Target_Internal::MyMethod()", r.InvalidMethods.ElementAt(2).ToString());
 		}
+
+		[TestMethod]
+		public void When_Target_Method_ChangedReturnType()
+		{
+			var context = _builder.BuildAssemblies();
+			
+			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.AreEqual(0, r.InvalidTypes.Length);
+			Assert.AreEqual(0, r.InvalidEvents.Length);
+			Assert.AreEqual(0, r.InvalidFields.Length);
+			Assert.AreEqual(1, r.InvalidMethods.Length);
+			Assert.AreEqual(0, r.InvalidProperties.Length);
+
+			Assert.AreEqual("TestMethod", r.InvalidMethods.ElementAt(0).Name);
+			Assert.AreEqual("System.Threading.Tasks.Task Uno.PackageDiff.Tests.Sources.When_Target_Method_ChangedReturnType::TestMethod()", r.InvalidMethods.ElementAt(0).ToString());
+		}
 	}
 }
