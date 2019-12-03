@@ -71,9 +71,7 @@ jobs:
     clean: all
 
   pool:
-    name: Default
-    demands:
-    - agent.os -equals Linux
+    vmImage: 'ubuntu-18.04'
     
   variables:
     NUGET_PACKAGES: $(Agent.WorkFolder)/.nuget
