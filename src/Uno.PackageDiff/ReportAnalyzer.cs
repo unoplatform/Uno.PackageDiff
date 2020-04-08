@@ -9,7 +9,7 @@ namespace Uno.PackageDiff
 	{
 		public static bool IsDiffFailed(ComparisonResult results, IgnoreSet ignoreSet)
 		{
-			var ignoredTypes = ignoreSet.Types.Select(t2 => t2.FullName);
+			var ignoredTypes = ignoreSet?.Types.Select(t2 => t2.FullName);
 			var failedTypes = results.InvalidTypes.Any(t => !ignoredTypes.Contains(t.ToSignature()));
 			var failedEvents = results.InvalidEvents.Any(e => !ignoreSet.Events.Select(t => t.FullName).Contains(e.ToSignature())
 				&& !ignoredTypes.Contains(e.DeclaringType.ToSignature()));
