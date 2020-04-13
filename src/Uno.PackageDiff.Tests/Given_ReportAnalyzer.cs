@@ -35,5 +35,16 @@ namespace Uno.PackageDiff.Tests
 			Assert.IsNotNull(context.IgnoreSet);
 			Assert.IsTrue(ReportAnalyzer.IsDiffFailed(res, context.IgnoreSet));
 		}
+
+		[TestMethod]
+		public void When_Ignore_All_Changes_To_Type()
+		{
+			var context = _builder.BuildAssemblies();
+
+			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.IsNotNull(context.IgnoreSet);
+			Assert.IsFalse(ReportAnalyzer.IsDiffFailed(comparison, context.IgnoreSet));
+		}
 	}
 }

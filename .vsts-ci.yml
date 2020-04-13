@@ -16,10 +16,7 @@ jobs:
       versionSpec: 4.9.1
       checkLatest: false
     
-  - task: GitVersion@4
-    # Ignore gitversion for forks, until this is fixed:
-    # https://developercommunity.visualstudio.com/content/problem/284991/public-vsts-previouw-cant-set-build-number-of-pr-b.html
-    condition: eq(variables['System.PullRequest.IsFork'], 'False')
+  - task: GitVersion@5
     inputs:
       updateAssemblyInfo: false
 
@@ -94,7 +91,7 @@ jobs:
 - job: macOS
 
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-10.15'
 
   variables:
     NUGET_PACKAGES: $(Agent.WorkFolder)/.nuget
