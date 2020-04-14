@@ -19,6 +19,7 @@ jobs:
   - task: GitVersion@5
     inputs:
       updateAssemblyInfo: false
+      configFilePath: gitversion.yml
 
   - task: DotNetCoreInstaller@0
     inputs:
