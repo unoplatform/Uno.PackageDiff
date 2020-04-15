@@ -102,9 +102,7 @@ namespace Uno.PackageDiff
 				writer.WriteLine($"## {Path.GetFileName(sourceFile)}");
 				var results = AssemblyComparer.CompareTypes(source, target);
 
-				ReportAnalyzer.GetReport(writer, results, ignoreSet);
-
-				return ReportAnalyzer.IsDiffFailed(results, ignoreSet);
+				return ReportAnalyzer.GenerateReport(writer, results, ignoreSet);
 			}
 		}
 
