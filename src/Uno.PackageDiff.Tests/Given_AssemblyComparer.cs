@@ -98,5 +98,21 @@ namespace Uno.PackageDiff.Tests
 			Assert.AreEqual("TestMethod", r.InvalidMethods.ElementAt(0).Name);
 			Assert.AreEqual("System.Threading.Tasks.Task Uno.PackageDiff.Tests.Sources.When_Target_Method_ChangedReturnType::TestMethod()", r.InvalidMethods.ElementAt(0).ToString());
 		}
+
+		[TestMethod]
+		public void When_Target_Type_Internal()
+		{
+			var context = _builder.BuildAssemblies();
+
+			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.AreEqual(1, r.InvalidTypes.Length);
+
+			// Changed members of removed (no longer visible) types shouldn't be flagged
+			Assert.AreEqual(0, r.InvalidEvents.Length);
+			Assert.AreEqual(0, r.InvalidFields.Length);
+			Assert.AreEqual(0, r.InvalidMethods.Length);
+			Assert.AreEqual(0, r.InvalidProperties.Length);
+		}
 	}
 }
