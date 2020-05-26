@@ -36,20 +36,20 @@ namespace Uno.PackageDiff
 			var baseTypes = baseAssembly.MainModule.GetTypes();
 			var targetTypes = targetAssembly.MainModule.GetTypes();
 
-			// Types only in target
-			var q = from targetType in baseTypes
-					where !targetTypes.Any(t => t.FullName == targetType.FullName)
-					where targetType.IsPublic
-					select targetType;
+			// Types only in base
+			var q = from baseType in baseTypes
+					where baseType.IsPublic
+					where !targetTypes.Any(t => t.FullName == baseType.FullName && t.IsPublic)
+					select baseType;
 
 			var invalidTypes = q.ToArray();
 
 			var existingTypes = (
-				from targetType in baseTypes
-				let sourceType = targetTypes.FirstOrDefault(t => t.FullName == targetType.FullName)
-				where sourceType != null
-				where targetType.IsPublic
-				select (sourceType, targetType)
+				from baseType in baseTypes
+				where baseType.IsPublic
+				let sourceType = targetTypes.FirstOrDefault(t => t.FullName == baseType.FullName)
+				where sourceType != null && sourceType.IsPublic
+				select (sourceType, baseType)
 			).ToArray();
 
 			var invalidProperties = FindMissingProperties(existingTypes);
