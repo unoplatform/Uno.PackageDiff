@@ -46,6 +46,9 @@ namespace Uno.PackageDiff
 		public string BaseVersion { get; set; } = "";
 
 		[XmlArray()]
+		public Member[] Assemblies { get; set; } = new Member[0];
+
+		[XmlArray()]
 		public Member[] Types { get; set; } = new Member[0];
 
 		[XmlArray()]

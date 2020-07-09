@@ -69,9 +69,22 @@ namespace Uno.PackageDiff
 						{
 							var targetFile = Path.Combine(platform.Target, Path.GetFileName(sourceFile));
 
-							Console.WriteLine($"Comparing {sourceFile} and {targetFile}");
+							if(!File.Exists(targetFile))
+							{
+								var targetFileName = Path.GetFileNameWithoutExtension(targetFile);
 
-							differences |= CompareAssemblies(writer, sourceFile, targetFile, ignoreSet);
+								if(!ignoreSet.Assemblies.Any(m => m.FullName.Equals(targetFileName, StringComparison.OrdinalIgnoreCase)))
+								{
+									Console.WriteLine($"The assembly {targetFileName} could not be found in the target package");
+									differences = true;
+								}
+							}
+							else
+							{
+								Console.WriteLine($"Comparing {sourceFile} and {targetFile}");
+
+								differences |= CompareAssemblies(writer, sourceFile, targetFile, ignoreSet);
+							}
 						}
 					}
 				}
