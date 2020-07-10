@@ -49,6 +49,9 @@ Here's the format:
       <Methods>
         <Member fullName="MyNamespace.MyClass.MyMethod" />
       </Methods>
+      <Assemblies>
+        <Member fullName="MyMissingAssemblyName" />
+      </Assemblies>
     </IgnoreSet>
   </IgnoreSets>
 </DiffIgnore>
