@@ -19,7 +19,7 @@
 		<PackageIconUrl>https://nv-assets.azurewebsites.net/logos/uno.png</PackageIconUrl>
 		<RepositoryUrl>https://github.com/nventive/Uno.PackageDiff</RepositoryUrl>
 		<Description>This package provides a nuget package diffing CLI tool.</Description>
-		<Copyright>Copyright (C) 2015-2019 nventive inc. - all rights reserved</Copyright>
+		<Copyright>Copyright (C) 2015-$([System.DateTime]::Now.ToString(`yyyy`)) Uno Platform inc. - all rights reserved</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -114,5 +114,21 @@ namespace Uno.PackageDiff.Tests
 			Assert.AreEqual(0, r.InvalidMethods.Length);
 			Assert.AreEqual(0, r.InvalidProperties.Length);
 		}
+
+		[TestMethod]
+		public void When_NewSlot()
+		{
+			var context = _builder.BuildAssemblies();
+
+			var r = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.AreEqual(0, r.InvalidTypes.Length);
+
+			// Changed members of removed (no longer visible) types shouldn't be flagged
+			Assert.AreEqual(0, r.InvalidEvents.Length);
+			Assert.AreEqual(0, r.InvalidFields.Length);
+			Assert.AreEqual(0, r.InvalidMethods.Length);
+			Assert.AreEqual(0, r.InvalidProperties.Length);
+		}
 	}
 }

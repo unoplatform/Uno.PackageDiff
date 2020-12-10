@@ -63,7 +63,13 @@ namespace Uno.PackageDiff
 		private static MethodDefinition[] FindMissingMethods(IEnumerable<(TypeDefinition sourceType, TypeDefinition targetType)> existingTypes)
 		{
 			IEnumerable<string> getMethodParamsSignature(MethodDefinition method)
-				=> method.Parameters.Select(p => p.Name + p.ParameterType.FullName);
+			{
+				if(method.DeclaringType.Name == "PopupBase")
+				{
+
+				}
+				return method.Parameters.Select(p => p.Name + p.ParameterType.FullName);
+			}
 
 			var q1 = from type in existingTypes
 					 from targetMethod in type.targetType.Methods
@@ -71,15 +77,26 @@ namespace Uno.PackageDiff
 					 where IsVisibleMethod(targetMethod)
 					 where !targetMethod.IsVirtual || !targetMethod.IsReuseSlot
 					 where !type.sourceType.Methods
-						.Any(sourceMethod =>
-						sourceMethod.Name == targetMethod.Name
-						&& targetMethod.ReturnType.FullName == sourceMethod.ReturnType.FullName
-						&& targetMethodParams.SequenceEqual(getMethodParamsSignature(sourceMethod))
-						&& IsVisibleMethod(sourceMethod)
-						&& targetMethod.IsVirtual == sourceMethod.IsVirtual)
+						.Any(sourceMethod => IsSameMethod(sourceMethod, targetMethod, targetMethodParams))
 					 select targetMethod;
 
 			return q1.ToArray();
+
+			bool IsSameMethod(MethodDefinition sourceMethod, MethodDefinition targetMethod, IEnumerable<string> targetMethodParams)
+			{
+				var isSameName = sourceMethod.Name == targetMethod.Name;
+				var isSameReturnType = targetMethod.ReturnType.FullName == sourceMethod.ReturnType.FullName;
+				var areSameParameters = targetMethodParams.SequenceEqual(getMethodParamsSignature(sourceMethod));
+				var isVisibleMethod = IsVisibleMethod(sourceMethod);
+				var isSameVirtual = targetMethod.IsVirtual == sourceMethod.IsVirtual;
+				var isReuseSlot = targetMethod.IsVirtual && !sourceMethod.IsVirtual && sourceMethod.IsReuseSlot;
+
+				return isSameName
+					&& isSameReturnType
+					&& areSameParameters
+					&& isVisibleMethod
+					&& (isSameVirtual || isReuseSlot);
+			}
 		}
 
 		private static bool IsVisibleMethod(MethodDefinition targetMethod) => targetMethod != null && (targetMethod.IsPublic || targetMethod.IsFamily);
