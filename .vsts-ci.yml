@@ -44,6 +44,15 @@ jobs:
       command: build
       arguments: -c Release  "/p:PackageOutputPath=$(build.artifactstagingdirectory)\nuget" "-p:PackageVersion=$(GITVERSION.FullSemVer)" "/p:InformationalVersion=$(GITVERSION.InformationalVersion)" /detailedsummary
       workingDirectory: $(build.sourcesdirectory)\src
+            
+  - task: VSTest@2
+    inputs:
+      testAssemblyVer2: |
+        **\*tests.dll
+        !**\obj\**
+      vstestLocationMethod: version
+      vsTestVersion: latest
+      testSelector: testAssemblies
 
   - task: DotNetCoreInstaller@0
     inputs:
@@ -67,15 +76,6 @@ jobs:
       PathtoPublish: $(build.artifactstagingdirectory)
       ArtifactName: unosourcegenerator-drop
       ArtifactType: Container
-            
-  - task: VSTest@2
-    inputs:
-      testAssemblyVer2: |
-        **\*tests.dll
-        !**\obj\**
-      vstestLocationMethod: version
-      vsTestVersion: latest
-      testSelector: testAssemblies
 
 - job: Linux
   workspace:
