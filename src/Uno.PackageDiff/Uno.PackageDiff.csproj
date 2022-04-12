@@ -2,11 +2,12 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>netcoreapp2.1</TargetFramework>
+		<TargetFramework>net5.0</TargetFramework>
 
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 		<LangVersion>latest</LangVersion>
+		<RollForward>major</RollForward>
 
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>generatepkgdiff</ToolCommandName>

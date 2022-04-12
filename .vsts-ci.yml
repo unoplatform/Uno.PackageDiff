@@ -2,8 +2,8 @@ jobs:
 - job: Windows
 
   pool:
-    name: Hosted
-    
+    vmImage: windows-2022
+
   variables:
     NUGET_PACKAGES: $(Agent.WorkFolder)\.nuget
 
@@ -11,26 +11,48 @@ jobs:
   - checkout: self
     clean: true
 
-  - task: NuGetToolInstaller@0
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 5.0.x'
+    retryCountOnTaskFailure: 3
     inputs:
-      versionSpec: 4.9.1
-      checkLatest: false
-    
-  - task: GitVersion@5
-    inputs:
-      updateAssemblyInfo: false
-      configFilePath: gitversion.yml
+      packageType: sdk
+      version: 5.0.x
 
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.200'
+    retryCountOnTaskFailure: 3
     inputs:
-      version: '2.2.103'
+      packageType: sdk
+      version: 6.0.200
+
+  - task: gitversion/setup@0
+    retryCountOnTaskFailure: 3
+    inputs:
+      versionSpec: '5.6.8'
+
+  - task: gitversion/execute@0
+    retryCountOnTaskFailure: 3
+    inputs:
+      updateAssemblyInfo: 'False'
+      useConfigFile: true
+      configFilePath: gitversion.yml
+    displayName: Use GitVersion
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
     inputs:
       command: build
-      arguments: --configuration Release  "/p:PackageOutputPath=$(build.artifactstagingdirectory)\nuget" "-p:PackageVersion=$(GITVERSION.FullSemVer)" "/p:InformationalVersion=$(GITVERSION.InformationalVersion)" /detailedsummary
+      arguments: -c Release  "/p:PackageOutputPath=$(build.artifactstagingdirectory)\nuget" "-p:PackageVersion=$(GITVERSION.FullSemVer)" "/p:InformationalVersion=$(GITVERSION.InformationalVersion)" /detailedsummary
       workingDirectory: $(build.sourcesdirectory)\src
+            
+  - task: VSTest@2
+    inputs:
+      testAssemblyVer2: |
+        **\*tests.dll
+        !**\obj\**
+      vstestLocationMethod: version
+      vsTestVersion: latest
+      testSelector: testAssemblies
 
   - task: DotNetCoreInstaller@0
     inputs:
@@ -54,15 +76,6 @@ jobs:
       PathtoPublish: $(build.artifactstagingdirectory)
       ArtifactName: unosourcegenerator-drop
       ArtifactType: Container
-            
-  - task: VSTest@2
-    inputs:
-      testAssemblyVer2: |
-        **\*tests.dll
-        !**\obj\**
-      vstestLocationMethod: version
-      vsTestVersion: latest
-      testSelector: testAssemblies
 
 - job: Linux
   workspace:
@@ -77,10 +90,13 @@ jobs:
   steps:
   - checkout: self
     clean: true
-  
-  - task: DotNetCoreInstaller@0
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.200'
+    retryCountOnTaskFailure: 3
     inputs:
-      version: '2.2.103'
+      packageType: sdk
+      version: 6.0.200
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
@@ -99,9 +115,13 @@ jobs:
     SourceLinkEnabled: false
 
   steps:
-  - task: DotNetCoreInstaller@0
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.200'
+    retryCountOnTaskFailure: 3
     inputs:
-      version: '2.2.103'
+      packageType: sdk
+      version: 6.0.200
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
