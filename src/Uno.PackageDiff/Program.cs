@@ -149,7 +149,7 @@ namespace Uno.PackageDiff
 					if (latestStable != null)
 					{
 						var packageId = packagePath.ToLowerInvariant();
-						var version = latestStable.Version.ToString().ToLowerInvariant();
+						var version = latestStable.Version.ToNormalizedString().ToLowerInvariant();
 
 						// https://docs.microsoft.com/en-us/nuget/api/package-base-address-resource#download-package-content-nupkg
 						var url = $"https://api.nuget.org/v3-flatcontainer/{packageId}/{version}/{packageId}.{version}.nupkg";
