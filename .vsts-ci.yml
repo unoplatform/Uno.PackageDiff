@@ -2,8 +2,8 @@ jobs:
 - job: Windows
 
   pool:
-    name: Hosted
-    
+    vmImage: windows-2022
+
   variables:
     NUGET_PACKAGES: $(Agent.WorkFolder)\.nuget
 
