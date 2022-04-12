@@ -11,25 +11,31 @@ jobs:
   - checkout: self
     clean: true
 
-  - task: NuGetToolInstaller@0
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.200'
+    retryCountOnTaskFailure: 3
     inputs:
-      versionSpec: 4.9.1
-      checkLatest: false
-    
-  - task: GitVersion@5
-    inputs:
-      updateAssemblyInfo: false
-      configFilePath: gitversion.yml
+      packageType: sdk
+      version: 6.0.200
 
-  - task: DotNetCoreInstaller@0
+  - task: gitversion/setup@0
+    retryCountOnTaskFailure: 3
     inputs:
-      version: '2.2.103'
+      versionSpec: '5.6.8'
+
+  - task: gitversion/execute@0
+    retryCountOnTaskFailure: 3
+    inputs:
+      updateAssemblyInfo: 'False'
+      useConfigFile: true
+      configFilePath: gitversion.yml
+    displayName: Use GitVersion
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
     inputs:
       command: build
-      arguments: --configuration Release  "/p:PackageOutputPath=$(build.artifactstagingdirectory)\nuget" "-p:PackageVersion=$(GITVERSION.FullSemVer)" "/p:InformationalVersion=$(GITVERSION.InformationalVersion)" /detailedsummary
+      arguments: -c Release  "/p:PackageOutputPath=$(build.artifactstagingdirectory)\nuget" "-p:PackageVersion=$(GITVERSION.FullSemVer)" "/p:InformationalVersion=$(GITVERSION.InformationalVersion)" /detailedsummary
       workingDirectory: $(build.sourcesdirectory)\src
 
   - task: DotNetCoreInstaller@0
