@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DiffIgnore>
+  <IgnoreSets>
+    <IgnoreSet baseVersion="1.0">
+      <Types>
+        <Member fullName="Uno.PackageDiff.Tests.Sources.When_Ignore_All_Changes_To_Type"/>
+      </Types>
+    </IgnoreSet>
+  </IgnoreSets>
+</DiffIgnore>

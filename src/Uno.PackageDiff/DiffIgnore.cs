@@ -31,12 +31,27 @@ namespace Uno.PackageDiff
 			var dcs = new XmlSerializer(typeof(DiffIgnore));
 			var diffIgnore = (DiffIgnore)dcs.Deserialize(stream);
 
-			if(diffIgnore.IgnoreSets.FirstOrDefault(s => s.BaseVersion == baseVersion) is IgnoreSet set)
+			if(diffIgnore.IgnoreSets.FirstOrDefault(s => CompareVersion(baseVersion, s.BaseVersion)) is IgnoreSet set)
 			{
 				return set;
 			}
 
 			return new IgnoreSet();
+		}
+
+		private static bool CompareVersion(string baseVersion, string ignoreSetVersion)
+		{
+			var ignoreSetVersionDotCount = ignoreSetVersion.Count(c => c == '.') ;
+			var baseVersion2 = new Version(baseVersion);
+			var ignoreSetVersion2 = new Version(ignoreSetVersionDotCount == 0 ? ignoreSetVersion + ".0" : ignoreSetVersion);
+
+			return ignoreSetVersionDotCount switch
+			{
+				0 => baseVersion2.Major == ignoreSetVersion2.Major,
+				1 => baseVersion2.Major == ignoreSetVersion2.Major
+					&& baseVersion2.Minor == ignoreSetVersion2.Minor,
+				_ => ignoreSetVersion == baseVersion
+			};
 		}
 	}
 

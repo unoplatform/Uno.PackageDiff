@@ -16,17 +16,17 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PackageProjectUrl>https://github.com/nventive/Uno.PackageDiff</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/unoplatform/Uno.PackageDiff</PackageProjectUrl>
 		<PackageIconUrl>https://nv-assets.azurewebsites.net/logos/uno.png</PackageIconUrl>
-		<RepositoryUrl>https://github.com/nventive/Uno.PackageDiff</RepositoryUrl>
+		<RepositoryUrl>https://github.com/unoplatform/Uno.PackageDiff</RepositoryUrl>
 		<Description>This package provides a nuget package diffing CLI tool.</Description>
-		<Copyright>Copyright (C) 2015-2019 nventive inc. - all rights reserved</Copyright>
+		<Copyright>Copyright (C) 2015-2022 Uno Platform inc. - all rights reserved</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.10.3" />
-		<PackageReference Include="Mono.Options" Version="5.3.0.1" />
-		<PackageReference Include="NuGet.Protocol" Version="4.9.3" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.4" />
+		<PackageReference Include="Mono.Options" Version="6.12.0.148" />
+		<PackageReference Include="NuGet.Protocol" Version="6.3.0" />
 		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
 	</ItemGroup>
 
