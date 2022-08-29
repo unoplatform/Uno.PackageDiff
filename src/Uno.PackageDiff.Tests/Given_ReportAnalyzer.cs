@@ -47,5 +47,27 @@ namespace Uno.PackageDiff.Tests
 			Assert.IsNotNull(context.IgnoreSet);
 			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
 		}
+
+		[TestMethod]
+		public void When_Ignore_All_Changes_With_Major_Minor_Only()
+		{
+			var context = _builder.BuildAssemblies();
+
+			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.IsNotNull(context.IgnoreSet);
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+		}
+
+		[TestMethod]
+		public void When_Ignore_All_Changes_With_Major_Only()
+		{
+			var context = _builder.BuildAssemblies();
+
+			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
+
+			Assert.IsNotNull(context.IgnoreSet);
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+		}
 	}
 }
