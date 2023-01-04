@@ -7,9 +7,9 @@ using Mono.Cecil;
 
 namespace Uno.PackageDiff
 {
-	public class ReportAnalyzer
+	internal class ReportAnalyzer
 	{
-		public static bool GenerateReport(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
+		public static bool GenerateReport(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var ignoredTypeNames = ignoreSet?.Types.Select(t2 => t2.FullName).ToArray();
 			var isFailed = false;
@@ -22,17 +22,15 @@ namespace Uno.PackageDiff
 			return isFailed;
 		}
 
-		private static bool ReportMissingTypes(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
+		private static bool ReportMissingTypes(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
-			writer.WriteLine("### {0} missing types:", results.InvalidTypes.Length);
+			writer.WriteMissingTypesStart(results.InvalidTypes.Length);
 			foreach(var invalidType in results.InvalidTypes)
 			{
 				var isIgnored = ignoreSet.Types
 					.Select(t => t.FullName)
 					.Contains(invalidType.ToSignature());
-				var strike = isIgnored
-					? "~~" : "";
 
 				if(!isIgnored)
 				{
@@ -40,13 +38,14 @@ namespace Uno.PackageDiff
 					shouldFail = true;
 				}
 
-				writer.WriteLine($"* {strike}`{invalidType.ToSignature()}`{strike}");
+				writer.WriteMissingType(invalidType, isIgnored);
 			}
+			writer.WriteMissingTypesEnd();
 
 			return shouldFail;
 		}
 
-		private static bool ReportProperties(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportProperties(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -54,11 +53,11 @@ namespace Uno.PackageDiff
 									group method by method.DeclaringType.FullName into types
 									select types;
 
-			writer.WriteLine("### {0} missing or changed properties in existing types:", results.InvalidProperties.Length);
+			writer.WriteMissingPropertiesStart(results.InvalidProperties.Length);
 
 			foreach(var updatedType in groupedProperties)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				writer.WriteMissingPropertiesForTypeStart(updatedType.Key);
 				foreach(var property in updatedType)
 				{
 					var isIgnored = ignoreSet.Properties
@@ -66,8 +65,6 @@ namespace Uno.PackageDiff
 						.Contains(property.ToSignature())
 						|| IsDeclaringTypeIgnored(property, ignoredTypeNames);
 
-					var strike = isIgnored
-						? "~~" : "";
 
 					if(!isIgnored)
 					{
@@ -75,14 +72,17 @@ namespace Uno.PackageDiff
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{property.ToSignature()}``{strike}");
+					writer.WriteMissingProperty(property, isIgnored);
 				}
+				writer.WriteMissingPropertiesForTypeEnd();
 			}
+
+			writer.WriteMissingPropertiesEnd();
 
 			return shouldFail;
 		}
 
-		private static bool ReportFields(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportFields(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -90,11 +90,11 @@ namespace Uno.PackageDiff
 								group method by method.DeclaringType.FullName into types
 								select types;
 
-			writer.WriteLine("### {0} missing or changed fields in existing types:", results.InvalidFields.Length);
+			writer.WriteMissingFieldsStart(results.InvalidFields.Length);
 
 			foreach(var updatedType in groupedFields)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				writer.WriteMissingFieldForTypeStart(updatedType.Key);
 				foreach(var field in updatedType)
 				{
 					var isIgnored = ignoreSet.Fields
@@ -102,23 +102,21 @@ namespace Uno.PackageDiff
 						.Contains(field.ToSignature())
 						|| IsDeclaringTypeIgnored(field, ignoredTypeNames);
 
-					var strike = isIgnored
-						? "~~" : "";
-
 					if(!isIgnored)
 					{
 						Console.WriteLine($"Error : Removed field {field.ToSignature()} not found in ignore set.");
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{field.ToSignature()}``{strike}");
+					writer.WriteMissingField(field, isIgnored);
 				}
+				writer.WriteMissingFieldForTypeEnd();
 			}
-
+			writer.WriteMissingFieldsEnd();
 			return shouldFail;
 		}
 
-		private static bool ReportMethods(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportMethods(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -126,11 +124,11 @@ namespace Uno.PackageDiff
 								 group method by method.DeclaringType.FullName into types
 								 select types;
 
-			writer.WriteLine("### {0} missing or changed method in existing types:", results.InvalidMethods.Length);
+			writer.WriteMissingMethodsStart(results.InvalidMethods.Length);
 
 			foreach(var updatedType in groupedMethods)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				writer.WriteMissingMethodsForTypeStart(updatedType.Key);
 				foreach(var method in updatedType)
 				{
 					var methodSignature = method.ToSignature();
@@ -140,23 +138,22 @@ namespace Uno.PackageDiff
 						.Contains(methodSignature)
 						|| IsDeclaringTypeIgnored(method, ignoredTypeNames);
 
-					var strike = isIgnored
-						? "~~" : "";
-
 					if(!isIgnored)
 					{
 						Console.WriteLine($"Error : Removed method {method.ToSignature()} not found in ignore set.");
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{methodSignature}``{strike}");
+					writer.WriteMissingMethod(method, isIgnored);
 				}
+				writer.WriteMissingMethodsForTypeEnd();
 			}
+			writer.WriteMissingMethodsEnd();
 
 			return shouldFail;
 		}
 
-		private static bool ReportEvents(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportEvents(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -164,11 +161,11 @@ namespace Uno.PackageDiff
 								group method by method.DeclaringType.FullName into types
 								select types;
 
-			writer.WriteLine("### {0} missing or changed events in existing types:", results.InvalidEvents.Length);
+			writer.WriteMissingEventsStart(results.InvalidEvents.Length);
 
 			foreach(var updatedType in groupedEvents)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				writer.WriteMissingEventsForTypeStart(updatedType.Key);
 				foreach(var evt in updatedType)
 				{
 					var isIgnored = ignoreSet.Events
@@ -185,9 +182,11 @@ namespace Uno.PackageDiff
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{evt.ToSignature()}``{strike}");
+					writer.WriteMissingEvent(evt, isIgnored);
 				}
+				writer.WriteMissingEventsForTypeEnd();
 			}
+			writer.WriteMissingMethodsEnd();
 
 			return shouldFail;
 		}

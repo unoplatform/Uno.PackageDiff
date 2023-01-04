@@ -18,25 +18,62 @@ using System.Threading.Tasks;
 
 namespace Uno.PackageDiff
 {
-    class Program
+	class Program
 	{
 		private static readonly PackageSource NuGetOrgSource = new PackageSource("https://api.nuget.org/v3/index.json");
 
 		static async Task<int> Main(string[] args)
-        {
+		{
 			string sourceArgument = null;
 			string targetArgument = null;
 			string outputFile = null;
 			string diffIgnoreFile = null;
+			string outputType = null;
 
 			var p = new OptionSet() {
 				{ "base=", s => sourceArgument = s },
 				{ "other=", s => targetArgument = s },
 				{ "outfile=", s => outputFile = s },
 				{ "diffignore=", s => diffIgnoreFile = s },
+				{ "outtype=", s => outputType = s},
 			};
 
 			p.Parse(args);
+
+			IDiffWriter writer = null;
+			if(string.IsNullOrEmpty(outputType))
+			{
+				writer = new Writers.MDDiffWriter(outputFile);
+			}
+			else
+			{
+				var types = outputType.Split(",", StringSplitOptions.RemoveEmptyEntries);
+				if(types.Length == 0)
+				{
+					writer = new Writers.MDDiffWriter(outputFile);
+				}
+				else
+				{
+					var composite = new Writers.CompositeWriter();
+					foreach(var type in types)
+					{
+						if(string.Equals("md", type, StringComparison.OrdinalIgnoreCase))
+						{
+							composite.Add(new Writers.MDDiffWriter(outputFile));
+						}
+						else if(string.Equals("diff", type, StringComparison.OrdinalIgnoreCase))
+						{
+							composite.Add(new Writers.XmlIngnoreWriter(outputFile));
+						}
+					}
+					if(composite.Count == 0)
+					{
+						Console.WriteLine($"Error : Invalid outtype {outputType}.");
+						return 1;
+					}
+					writer = composite;
+				}
+			}
 
 			var source = await GetPackage(sourceArgument);
 			var target = await GetPackage(targetArgument);
@@ -54,18 +91,20 @@ namespace Uno.PackageDiff
 										 Target = targetAssemblyPath
 									 };
 
+
 				var ignoreSet = DiffIgnore.ParseDiffIgnore(diffIgnoreFile, source.nuspecReader.GetVersion().ToString());
 
 				bool differences = false;
-				using (var writer = new StreamWriter(outputFile))
+				using(writer)
 				{
-					writer.WriteLine($"Comparison report for {source.nuspecReader.GetId()} **{source.nuspecReader.GetVersion()}** with {target.nuspecReader.GetId()} **{target.nuspecReader.GetVersion()}**");
+					writer.WriteHeader(source: (source.nuspecReader.GetId(), source.nuspecReader.GetVersion())
+						, target: (target.nuspecReader.GetId(), target.nuspecReader.GetVersion()));
 
 					foreach(var platform in platformsFiles)
 					{
-						writer.WriteLine($"# {platform.Platform} Platform");
+						writer.WritePlatform(platform.Platform);
 
-						foreach (var sourceFile in Directory.GetFiles(platform.Source, "*.dll"))
+						foreach(var sourceFile in Directory.GetFiles(platform.Source, "*.dll"))
 						{
 							var targetFile = Path.Combine(platform.Target, Path.GetFileName(sourceFile));
 
@@ -92,7 +131,7 @@ namespace Uno.PackageDiff
 				var withDifferences = differences ? ", with differences" : "";
 				Console.WriteLine($"Done comparing{withDifferences}.");
 
-				if (differences)
+				if(differences)
 				{
 					Console.WriteLine(@"Error : Build failed with unexpected differences. Modifications to the public API introduce binary breaking changes and should be avoided.");
 					Console.WriteLine("If these modifications were expected and intended, see https://github.com/nventive/Uno.PackageDiff#how-to-provide-an-ignore-set on how to ignore them.");
@@ -107,12 +146,12 @@ namespace Uno.PackageDiff
 			}
 		}
 
-		public static bool CompareAssemblies(StreamWriter writer, string sourceFile, string targetFile, IgnoreSet ignoreSet)
+		public static bool CompareAssemblies(IDiffWriter writer, string sourceFile, string targetFile, IgnoreSet ignoreSet)
 		{
 			using(var source = ReadModule(sourceFile))
 			using(var target = ReadModule(targetFile))
 			{
-				writer.WriteLine($"## {Path.GetFileName(sourceFile)}");
+				writer.WriteAssemblyName(Path.GetFileName(sourceFile));
 				var results = AssemblyComparer.CompareTypes(source, target);
 
 				return ReportAnalyzer.GenerateReport(writer, results, ignoreSet);
@@ -146,7 +185,7 @@ namespace Uno.PackageDiff
 						.Where(v => !v.Version.IsPrerelease)
 						.FirstOrDefault();
 
-					if (latestStable != null)
+					if(latestStable != null)
 					{
 						var packageId = packagePath.ToLowerInvariant();
 						var version = latestStable.Version.ToNormalizedString().ToLowerInvariant();
@@ -182,9 +221,9 @@ namespace Uno.PackageDiff
 			Directory.CreateDirectory(path);
 
 			Console.WriteLine($"Extracting {packagePath} -> {path}");
-			using (var file = File.OpenRead(packagePath))
+			using(var file = File.OpenRead(packagePath))
 			{
-				using (var archive = new ZipArchive(file, ZipArchiveMode.Read))
+				using(var archive = new ZipArchive(file, ZipArchiveMode.Read))
 				{
 					archive.ExtractToDirectory(path);
 				}
@@ -200,5 +239,5 @@ namespace Uno.PackageDiff
 			}
 		}
 
-    }
+	}
 }
