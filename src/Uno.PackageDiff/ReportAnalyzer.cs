@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using Mono.Cecil;
 
 namespace Uno.PackageDiff
@@ -25,7 +22,7 @@ namespace Uno.PackageDiff
 		private static bool ReportMissingTypes(IDiffWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
-			writer.WriteMissingTypesStart(results.InvalidTypes.Length);
+			writer?.WriteMissingTypesStart(results.InvalidTypes.Length);
 			foreach(var invalidType in results.InvalidTypes)
 			{
 				var isIgnored = ignoreSet.Types
@@ -38,9 +35,9 @@ namespace Uno.PackageDiff
 					shouldFail = true;
 				}
 
-				writer.WriteMissingType(invalidType, isIgnored);
+				writer?.WriteMissingType(invalidType, isIgnored);
 			}
-			writer.WriteMissingTypesEnd();
+			writer?.WriteMissingTypesEnd();
 
 			return shouldFail;
 		}
@@ -53,11 +50,11 @@ namespace Uno.PackageDiff
 									group method by method.DeclaringType.FullName into types
 									select types;
 
-			writer.WriteMissingPropertiesStart(results.InvalidProperties.Length);
+			writer?.WriteMissingPropertiesStart(results.InvalidProperties.Length);
 
 			foreach(var updatedType in groupedProperties)
 			{
-				writer.WriteMissingPropertiesForTypeStart(updatedType.Key);
+				writer?.WriteMissingPropertiesForTypeStart(updatedType.Key);
 				foreach(var property in updatedType)
 				{
 					var isIgnored = ignoreSet.Properties
@@ -72,12 +69,12 @@ namespace Uno.PackageDiff
 						shouldFail = true;
 					}
 
-					writer.WriteMissingProperty(property, isIgnored);
+					writer?.WriteMissingProperty(property, isIgnored);
 				}
-				writer.WriteMissingPropertiesForTypeEnd();
+				writer?.WriteMissingPropertiesForTypeEnd();
 			}
 
-			writer.WriteMissingPropertiesEnd();
+			writer?.WriteMissingPropertiesEnd();
 
 			return shouldFail;
 		}
@@ -90,11 +87,11 @@ namespace Uno.PackageDiff
 								group method by method.DeclaringType.FullName into types
 								select types;
 
-			writer.WriteMissingFieldsStart(results.InvalidFields.Length);
+			writer?.WriteMissingFieldsStart(results.InvalidFields.Length);
 
 			foreach(var updatedType in groupedFields)
 			{
-				writer.WriteMissingFieldForTypeStart(updatedType.Key);
+				writer?.WriteMissingFieldForTypeStart(updatedType.Key);
 				foreach(var field in updatedType)
 				{
 					var isIgnored = ignoreSet.Fields
@@ -108,11 +105,11 @@ namespace Uno.PackageDiff
 						shouldFail = true;
 					}
 
-					writer.WriteMissingField(field, isIgnored);
+					writer?.WriteMissingField(field, isIgnored);
 				}
-				writer.WriteMissingFieldForTypeEnd();
+				writer?.WriteMissingFieldForTypeEnd();
 			}
-			writer.WriteMissingFieldsEnd();
+			writer?.WriteMissingFieldsEnd();
 			return shouldFail;
 		}
 
@@ -124,11 +121,11 @@ namespace Uno.PackageDiff
 								 group method by method.DeclaringType.FullName into types
 								 select types;
 
-			writer.WriteMissingMethodsStart(results.InvalidMethods.Length);
+			writer?.WriteMissingMethodsStart(results.InvalidMethods.Length);
 
 			foreach(var updatedType in groupedMethods)
 			{
-				writer.WriteMissingMethodsForTypeStart(updatedType.Key);
+				writer?.WriteMissingMethodsForTypeStart(updatedType.Key);
 				foreach(var method in updatedType)
 				{
 					var methodSignature = method.ToSignature();
@@ -144,11 +141,11 @@ namespace Uno.PackageDiff
 						shouldFail = true;
 					}
 
-					writer.WriteMissingMethod(method, isIgnored);
+					writer?.WriteMissingMethod(method, isIgnored);
 				}
-				writer.WriteMissingMethodsForTypeEnd();
+				writer?.WriteMissingMethodsForTypeEnd();
 			}
-			writer.WriteMissingMethodsEnd();
+			writer?.WriteMissingMethodsEnd();
 
 			return shouldFail;
 		}
@@ -161,11 +158,11 @@ namespace Uno.PackageDiff
 								group method by method.DeclaringType.FullName into types
 								select types;
 
-			writer.WriteMissingEventsStart(results.InvalidEvents.Length);
+			writer?.WriteMissingEventsStart(results.InvalidEvents.Length);
 
 			foreach(var updatedType in groupedEvents)
 			{
-				writer.WriteMissingEventsForTypeStart(updatedType.Key);
+				writer?.WriteMissingEventsForTypeStart(updatedType.Key);
 				foreach(var evt in updatedType)
 				{
 					var isIgnored = ignoreSet.Events
@@ -182,11 +179,11 @@ namespace Uno.PackageDiff
 						shouldFail = true;
 					}
 
-					writer.WriteMissingEvent(evt, isIgnored);
+					writer?.WriteMissingEvent(evt, isIgnored);
 				}
-				writer.WriteMissingEventsForTypeEnd();
+				writer?.WriteMissingEventsForTypeEnd();
 			}
-			writer.WriteMissingMethodsEnd();
+			writer?.WriteMissingMethodsEnd();
 
 			return shouldFail;
 		}

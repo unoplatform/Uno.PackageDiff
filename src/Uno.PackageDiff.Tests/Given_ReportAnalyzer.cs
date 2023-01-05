@@ -23,7 +23,7 @@ namespace Uno.PackageDiff.Tests
 
 			var res = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, res, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, res, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -34,7 +34,7 @@ namespace Uno.PackageDiff.Tests
 			var res = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsTrue(ReportAnalyzer.GenerateReport(StreamWriter.Null, res, context.IgnoreSet));
+			Assert.IsTrue(ReportAnalyzer.GenerateReport(default, res, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -45,7 +45,7 @@ namespace Uno.PackageDiff.Tests
 			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, comparison, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -56,7 +56,7 @@ namespace Uno.PackageDiff.Tests
 			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, comparison, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -67,7 +67,7 @@ namespace Uno.PackageDiff.Tests
 			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, comparison, context.IgnoreSet));
 		}
 	}
 }
