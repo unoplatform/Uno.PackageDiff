@@ -29,6 +29,9 @@ namespace Uno.PackageDiff
 			string outputFile = null;
 			string diffIgnoreFile = null;
 			string outputType = null;
+			string githubPAT = null;
+			string sourceRepository = null;
+			string githubPRid = null;
 
 			var p = new OptionSet() {
 				{ "base=", s => sourceArgument = s },
@@ -36,6 +39,13 @@ namespace Uno.PackageDiff
 				{ "outfile=", s => outputFile = s },
 				{ "diffignore=", s => diffIgnoreFile = s },
 				{ "outtype=", s => outputType = s},
+
+				//
+				// GitHub PR comments related
+				//
+				{ "github-pat=", s => githubPAT = s },
+				{ "source-repository=", s => sourceRepository = s },
+				{ "github-pr-id=", s => githubPRid = s  }
 			};
 
 			p.Parse(args);
@@ -64,6 +74,10 @@ namespace Uno.PackageDiff
 						else if(string.Equals("diff", type, StringComparison.OrdinalIgnoreCase))
 						{
 							composite.Add(new Writers.XmlIngnoreWriter(outputFile));
+						}
+						else if(string.Equals("github", type, StringComparison.OrdinalIgnoreCase))
+						{
+							composite.Add(new Writers.GitHubWriter(githubPAT, sourceRepository, githubPRid));
 						}
 					}
 					if(composite.Count == 0)
