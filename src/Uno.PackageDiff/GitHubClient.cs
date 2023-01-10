@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using System.Web;
 
 namespace Uno.PackageDiff
@@ -18,16 +17,14 @@ namespace Uno.PackageDiff
 			await PostDocument(new Uri($"https://api.github.com/repos/{path}/issues/{githubPRid}/comments"), githubPAT, bodyContent);
 		}
 
-		private static async Task<dynamic> PostDocument(Uri contentUri, string githubPAT, string document)
+		private static async Task PostDocument(Uri contentUri, string githubPAT, string document)
 		{
 			var wc = new System.Net.WebClient();
 			wc.Headers.Add("User-agent", "uno-nv-sync");
 			wc.Headers.Add("Authorization", $"token {githubPAT}");
 			wc.Encoding = UTF8Encoding.UTF8;
 
-			var result = await wc.UploadStringTaskAsync(contentUri, "POST", document);
-
-			return JsonConvert.DeserializeObject(result);
+			_ = await wc.UploadStringTaskAsync(contentUri, "POST", document);
 		}
 	}
 }
