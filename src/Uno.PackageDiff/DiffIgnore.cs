@@ -83,5 +83,8 @@ namespace Uno.PackageDiff
 	{
 		[XmlAttribute("fullName")]
 		public string FullName { get; set; }
+
+		[XmlAttribute("reason")]
+		public string Reason { get; set; }
 	}
 }

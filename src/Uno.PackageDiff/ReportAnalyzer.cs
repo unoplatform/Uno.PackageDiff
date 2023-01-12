@@ -1,52 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using Mono.Cecil;
 
 namespace Uno.PackageDiff
 {
-	public class ReportAnalyzer
+	internal class ReportAnalyzer
 	{
-		public static bool GenerateReport(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
+
+		public static bool GenerateReport(RunningContext context, IReportWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var ignoredTypeNames = ignoreSet?.Types.Select(t2 => t2.FullName).ToArray();
 			var isFailed = false;
-			isFailed |= ReportMissingTypes(writer, results, ignoreSet);
-			isFailed |= ReportMethods(writer, results, ignoreSet, ignoredTypeNames);
-			isFailed |= ReportEvents(writer, results, ignoreSet, ignoredTypeNames);
-			isFailed |= ReportFields(writer, results, ignoreSet, ignoredTypeNames);
-			isFailed |= ReportProperties(writer, results, ignoreSet, ignoredTypeNames);
+			isFailed |= ReportMissingTypes(context, writer, results, ignoreSet);
+			isFailed |= ReportMethods(context, writer, results, ignoreSet, ignoredTypeNames);
+			isFailed |= ReportEvents(context, writer, results, ignoreSet, ignoredTypeNames);
+			isFailed |= ReportFields(context, writer, results, ignoreSet, ignoredTypeNames);
+			isFailed |= ReportProperties(context, writer, results, ignoreSet, ignoredTypeNames);
 
 			return isFailed;
 		}
 
-		private static bool ReportMissingTypes(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
+		private static bool ReportMissingTypes(RunningContext context, IReportWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
-			writer.WriteLine("### {0} missing types:", results.InvalidTypes.Length);
+			List<(TypeDefinition InvalidType, bool IsIgnored, string IgnoreReason)> list = new(results.InvalidTypes.Length);
 			foreach(var invalidType in results.InvalidTypes)
 			{
-				var isIgnored = ignoreSet.Types
-					.Select(t => t.FullName)
-					.Contains(invalidType.ToSignature());
-				var strike = isIgnored
-					? "~~" : "";
+				var reason = string.Empty;
+				var isIgnored = false;
+				if(ignoreSet.Types.FirstOrDefault((t, a) => string.Equals(t.FullName, a, StringComparison.OrdinalIgnoreCase), invalidType.ToSignature()) is Member member)
+				{
+					reason = member.Reason;
+					isIgnored = true;
+				}
 
 				if(!isIgnored)
 				{
-					Console.WriteLine($"Error : Removed type {invalidType.ToSignature()} not found in ignore set.");
+					context?.Error($"Removed type {invalidType.ToSignature()} not found in ignore set.");
 					shouldFail = true;
 				}
 
-				writer.WriteLine($"* {strike}`{invalidType.ToSignature()}`{strike}");
+				list.Add((invalidType, isIgnored, reason));
 			}
-
+			writer?.Write(list.AsReadOnly());
 			return shouldFail;
 		}
 
-		private static bool ReportProperties(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportProperties(RunningContext context, IReportWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -54,35 +55,43 @@ namespace Uno.PackageDiff
 									group method by method.DeclaringType.FullName into types
 									select types;
 
-			writer.WriteLine("### {0} missing or changed properties in existing types:", results.InvalidProperties.Length);
-
+			List<(string Type, IReadOnlyList<(PropertyDefinition Property, bool IsIgnored, string IgnoreReason)> InvalidProperties)> invalidProperties =
+				new(results.InvalidProperties.Length);
 			foreach(var updatedType in groupedProperties)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				List<(PropertyDefinition Property, bool IsIgnored, string IgnoreReason)> properties = new();
 				foreach(var property in updatedType)
 				{
-					var isIgnored = ignoreSet.Properties
-						.Select(t => t.FullName)
-						.Contains(property.ToSignature())
-						|| IsDeclaringTypeIgnored(property, ignoredTypeNames);
-
-					var strike = isIgnored
-						? "~~" : "";
+					var signature = property.ToSignature();
+					var reason = string.Empty;
+					var isIgnored = false;
+					if(IsDeclaringTypeIgnored(property, ignoredTypeNames))
+					{
+						reason = $"The property {signature} is declaring in ingnored type {property.DeclaringType.Name}.";
+						isIgnored = true;
+					}
+					else if(ignoreSet.Properties.FirstOrDefault((p, a) => string.Equals(p.FullName, a, StringComparison.OrdinalIgnoreCase), signature) is Member member)
+					{
+						reason = member.Reason;
+						isIgnored = true;
+					}
 
 					if(!isIgnored)
 					{
-						Console.WriteLine($"Error : Removed property {property.ToSignature()} not found in ignore set.");
+						Console.WriteLine($"Removed property {property.ToSignature()} not found in ignore set.");
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{property.ToSignature()}``{strike}");
+					properties.Add((property, isIgnored, reason));
 				}
+				invalidProperties.Add((updatedType.Key, properties));
 			}
+			writer?.Write(invalidProperties.AsReadOnly());
 
 			return shouldFail;
 		}
 
-		private static bool ReportFields(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportFields(RunningContext context, IReportWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -90,35 +99,43 @@ namespace Uno.PackageDiff
 								group method by method.DeclaringType.FullName into types
 								select types;
 
-			writer.WriteLine("### {0} missing or changed fields in existing types:", results.InvalidFields.Length);
+			List<(string Type, IReadOnlyList<(FieldDefinition Field, bool IsIgnored, string IgnoreReason)> InvalidFields)> invalidFields =
+				new(results.InvalidFields.Length);
 
 			foreach(var updatedType in groupedFields)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				List<(FieldDefinition Field, bool IsIgnored, string IgnoreReason)> fields = new();
 				foreach(var field in updatedType)
 				{
-					var isIgnored = ignoreSet.Fields
-						.Select(t => t.FullName)
-						.Contains(field.ToSignature())
-						|| IsDeclaringTypeIgnored(field, ignoredTypeNames);
-
-					var strike = isIgnored
-						? "~~" : "";
+					var signature = field.ToSignature();
+					var reason = string.Empty;
+					var isIgnored = false;
+					if(IsDeclaringTypeIgnored(field, ignoredTypeNames))
+					{
+						reason = $"The field {signature} is declaring in ingnored type {field.DeclaringType.Name}.";
+						isIgnored= true ;
+					}
+					else if(ignoreSet.Fields.FirstOrDefault((t, a) => string.Equals(t.FullName, a, StringComparison.OrdinalIgnoreCase), signature) is Member member)
+					{
+						reason = member.Reason;
+						isIgnored= true ;
+					}
 
 					if(!isIgnored)
 					{
-						Console.WriteLine($"Error : Removed field {field.ToSignature()} not found in ignore set.");
+						context?.Error($"Removed field {field.ToSignature()} not found in ignore set.");
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{field.ToSignature()}``{strike}");
+					fields.Add((field, isIgnored, reason));
 				}
+				invalidFields.Add((updatedType.Key, fields));
 			}
-
+			writer?.Write(invalidFields.AsReadOnly());
 			return shouldFail;
 		}
 
-		private static bool ReportMethods(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportMethods(RunningContext context, IReportWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -126,37 +143,44 @@ namespace Uno.PackageDiff
 								 group method by method.DeclaringType.FullName into types
 								 select types;
 
-			writer.WriteLine("### {0} missing or changed method in existing types:", results.InvalidMethods.Length);
+			List<(string Type, IReadOnlyList<(MethodDefinition Method, bool IsIgnored, string IgnoreReason)> InvalidMethods)> invalidMethods =
+				new(results.InvalidMethods.Length);
 
 			foreach(var updatedType in groupedMethods)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				List<(MethodDefinition Method, bool IsIgnored, string IgnoreReason)> methods = new();
 				foreach(var method in updatedType)
 				{
-					var methodSignature = method.ToSignature();
-
-					var isIgnored = ignoreSet.Methods
-						.Select(t => t.FullName)
-						.Contains(methodSignature)
-						|| IsDeclaringTypeIgnored(method, ignoredTypeNames);
-
-					var strike = isIgnored
-						? "~~" : "";
+					var signature = method.ToSignature();
+					var reason = string.Empty;
+					var isIgnored = false;
+					if(IsDeclaringTypeIgnored(method, ignoredTypeNames))
+					{
+						reason = $"The method {signature} is declaring in ingnored type {method.DeclaringType.Name}.";
+						isIgnored = true;
+					}
+					else if(ignoreSet.Methods.FirstOrDefault((t, a) => string.Equals(t.FullName, a, StringComparison.OrdinalIgnoreCase), signature) is Member member)
+					{
+						reason = member.Reason;
+						isIgnored = true;
+					}
 
 					if(!isIgnored)
 					{
-						Console.WriteLine($"Error : Removed method {method.ToSignature()} not found in ignore set.");
+						context?.Error($"Removed method {method.ToSignature()} not found in ignore set.");
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{methodSignature}``{strike}");
+					methods.Add((method, isIgnored, reason));
 				}
+				invalidMethods.Add((updatedType.Key, methods));
 			}
+			writer?.Write(invalidMethods.AsReadOnly());
 
 			return shouldFail;
 		}
 
-		private static bool ReportEvents(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportEvents(RunningContext context, IReportWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
 		{
 			var shouldFail = false;
 
@@ -164,30 +188,39 @@ namespace Uno.PackageDiff
 								group method by method.DeclaringType.FullName into types
 								select types;
 
-			writer.WriteLine("### {0} missing or changed events in existing types:", results.InvalidEvents.Length);
+			List<(string Type, IReadOnlyList<(EventDefinition Events, bool IsIgnored, string IgnoreReason)> InvalidEvents)> invalidEvents =
+				new(results.InvalidEvents.Length);
 
 			foreach(var updatedType in groupedEvents)
 			{
-				writer.WriteLine("- `{0}`", updatedType.Key);
+				List<(EventDefinition Event, bool IsIgnored, string IgnoreReason)> events = new();
 				foreach(var evt in updatedType)
 				{
-					var isIgnored = ignoreSet.Events
-						.Select(t => t.FullName)
-						.Contains(evt.ToString())
-						|| IsDeclaringTypeIgnored(evt, ignoredTypeNames);
-
-					var strike = isIgnored
-						? "~~" : "";
+					var signature = evt.ToSignature();
+					var reason = string.Empty;
+					var isIgnored = false;
+					if(IsDeclaringTypeIgnored(evt, ignoredTypeNames))
+					{
+						reason = $"The event {signature} is declaring in ingnored type {evt.DeclaringType.Name}.";
+						isIgnored = true;
+					}
+					else if(ignoreSet.Events.FirstOrDefault((t, a) => string.Equals(t.FullName, a, StringComparison.OrdinalIgnoreCase), signature) is Member member)
+					{
+						reason = member.Reason;
+						isIgnored = true;
+					}
 
 					if(!isIgnored)
 					{
-						Console.WriteLine($"Error : Removed event {evt.ToSignature()} not found in ignore set.");
+						context?.Error($"Removed event {evt.ToSignature()} not found in ignore set.");
 						shouldFail = true;
 					}
 
-					writer.WriteLine($"\t* {strike}``{evt.ToSignature()}``{strike}");
+					events.Add((evt, isIgnored, reason));
 				}
+				invalidEvents.Add((updatedType.Key, events));
 			}
+			writer?.Write(invalidEvents.AsReadOnly());
 
 			return shouldFail;
 		}

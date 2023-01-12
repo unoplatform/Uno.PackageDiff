@@ -1,0 +1,37 @@
+name: 'NuGet Package Diffing Tool'
+description: 'NuGet Package Diffing Tool.'
+branding:
+  icon: award
+  color: green
+inputs:
+  token:
+    description: 'GitHub token allowed to write a comment in pull request.'
+    required: true
+  repository:
+    description: 'GitHub repository where post the comment.'
+    required: true
+  pr-id:
+    description: 'GitHub pr id.'
+    required: true
+  base:  
+    description: 'Refercene NuGet package (eg: Uno.UI).'
+    required: true
+  other:
+    description: 'The pacakeg to compare with base (eg: Uno.UI.4.7.0-PullRequest-10878-65607-10878.nuget).'
+    required: true
+  diffignore: 
+    description: 'Path of ignore file.'
+    required: false
+
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ format('--github-pat={0}', inputs.token) }}
+    - ${{ format('--github-repository={0}', inputs.repository) }}
+    - ${{ format('--github-pr-id={0}', inputs.pr-id) }}
+    - ${{ format('--base={0}', inputs.base) }}
+    - ${{ format('--other={0}', inputs.other) }}
+    - ${{ format('--diffignore={0}', inputs.diffignore) }}
+    - '--outtype=github'

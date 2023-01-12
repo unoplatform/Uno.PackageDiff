@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Uno.PackageDiff.Tests
 {
@@ -23,7 +19,7 @@ namespace Uno.PackageDiff.Tests
 
 			var res = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, res, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, default, res, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -34,7 +30,7 @@ namespace Uno.PackageDiff.Tests
 			var res = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsTrue(ReportAnalyzer.GenerateReport(StreamWriter.Null, res, context.IgnoreSet));
+			Assert.IsTrue(ReportAnalyzer.GenerateReport(default, default, res, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -45,7 +41,7 @@ namespace Uno.PackageDiff.Tests
 			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, default, comparison, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -56,7 +52,7 @@ namespace Uno.PackageDiff.Tests
 			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, default, comparison, context.IgnoreSet));
 		}
 
 		[TestMethod]
@@ -67,7 +63,7 @@ namespace Uno.PackageDiff.Tests
 			var comparison = AssemblyComparer.CompareTypes(context.BaseAssembly, context.TargetAssembly);
 
 			Assert.IsNotNull(context.IgnoreSet);
-			Assert.IsFalse(ReportAnalyzer.GenerateReport(StreamWriter.Null, comparison, context.IgnoreSet));
+			Assert.IsFalse(ReportAnalyzer.GenerateReport(default, default, comparison, context.IgnoreSet));
 		}
 	}
 }
