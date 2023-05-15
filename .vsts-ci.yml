@@ -12,18 +12,11 @@ jobs:
     clean: true
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.x'
+    displayName: 'Use .NET SDK 7.0.203'
     retryCountOnTaskFailure: 3
     inputs:
       packageType: sdk
-      version: 5.0.x
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.200'
-    retryCountOnTaskFailure: 3
-    inputs:
-      packageType: sdk
-      version: 6.0.200
+      version: 7.0.203
 
   - task: gitversion/setup@0
     retryCountOnTaskFailure: 3
@@ -92,11 +85,11 @@ jobs:
     clean: true
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.200'
+    displayName: 'Use .NET Core SDK 7.0.203'
     retryCountOnTaskFailure: 3
     inputs:
       packageType: sdk
-      version: 6.0.200
+      version: 7.0.203
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
@@ -117,11 +110,11 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.200'
+    displayName: 'Use .NET Core SDK 7.0.203'
     retryCountOnTaskFailure: 3
     inputs:
       packageType: sdk
-      version: 6.0.200
+      version: 7.0.203
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
