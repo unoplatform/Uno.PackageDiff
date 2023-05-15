@@ -60,3 +60,5 @@ Here's the format:
 The `baseVersion` attribute denotes the version for which the Ignore Set has been authored. This enables for the automatic discarding of existing sets when a new package version is published in nuget.org.
 
 The `fullname` of members should be the exact string provided in the markdown file when a difference is identified.
+
+You can also specifiy `isRegex="true"` to a `Member`, and the `fullName` will be treated as a Regex pattern to match against.
