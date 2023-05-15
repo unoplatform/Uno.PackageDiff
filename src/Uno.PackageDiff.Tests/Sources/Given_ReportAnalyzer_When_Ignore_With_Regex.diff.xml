@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DiffIgnore>
+  <IgnoreSets>
+    <IgnoreSet baseVersion="1.0.0">
+      <Properties>
+        <Member fullName=".+?_Ignored" isRegex="true" />
+      </Properties>
+    </IgnoreSet>
+  </IgnoreSets>
+</DiffIgnore>
