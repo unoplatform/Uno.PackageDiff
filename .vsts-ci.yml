@@ -19,11 +19,11 @@ jobs:
       version: 5.0.x
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.200'
+    displayName: 'Use .NET SDK 7.0.203'
     retryCountOnTaskFailure: 3
     inputs:
       packageType: sdk
-      version: 6.0.200
+      version: 7.0.203
 
   - task: gitversion/setup@0
     retryCountOnTaskFailure: 3
@@ -82,7 +82,7 @@ jobs:
     clean: all
 
   pool:
-    vmImage: 'ubuntu-20.04'
+    vmImage: 'ubuntu-latest'
     
   variables:
     NUGET_PACKAGES: $(Agent.WorkFolder)/.nuget
@@ -92,11 +92,11 @@ jobs:
     clean: true
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.200'
+    displayName: 'Use .NET Core SDK 7.0.203'
     retryCountOnTaskFailure: 3
     inputs:
       packageType: sdk
-      version: 6.0.200
+      version: 7.0.203
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build
@@ -108,7 +108,7 @@ jobs:
 - job: macOS
 
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macOS-latest'
 
   variables:
     NUGET_PACKAGES: $(Agent.WorkFolder)/.nuget
@@ -117,11 +117,11 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.200'
+    displayName: 'Use .NET Core SDK 7.0.203'
     retryCountOnTaskFailure: 3
     inputs:
       packageType: sdk
-      version: 6.0.200
+      version: 7.0.203
 
   - task: DotNetCoreCLI@2
     displayName: .NET Core Build

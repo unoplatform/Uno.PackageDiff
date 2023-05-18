@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
 namespace Uno.PackageDiff
@@ -41,7 +42,7 @@ namespace Uno.PackageDiff
 
 		private static bool CompareVersion(string baseVersion, string ignoreSetVersion)
 		{
-			var ignoreSetVersionDotCount = ignoreSetVersion.Count(c => c == '.') ;
+			var ignoreSetVersionDotCount = ignoreSetVersion.Count(c => c == '.');
 			var baseVersion2 = new Version(baseVersion);
 			var ignoreSetVersion2 = new Version(ignoreSetVersionDotCount == 0 ? ignoreSetVersion + ".0" : ignoreSetVersion);
 
@@ -83,5 +84,15 @@ namespace Uno.PackageDiff
 	{
 		[XmlAttribute("fullName")]
 		public string FullName { get; set; }
+
+		[XmlAttribute("isRegex")]
+		public bool IsRegex { get; set; }
+
+		public bool Matches(string member, StringComparison stringComparison = StringComparison.Ordinal)
+		{
+			return IsRegex
+				? Regex.IsMatch(member, FullName)
+				: FullName.Equals(member, stringComparison);
+		}
 	}
 }

@@ -73,7 +73,7 @@ namespace Uno.PackageDiff
 							{
 								var targetFileName = Path.GetFileNameWithoutExtension(targetFile);
 
-								if(!ignoreSet.Assemblies.Any(m => m.FullName.Equals(targetFileName, StringComparison.OrdinalIgnoreCase)))
+								if(!ignoreSet.Assemblies.Any(m => m.Matches(targetFileName, StringComparison.OrdinalIgnoreCase)))
 								{
 									Console.WriteLine($"The assembly {targetFileName} could not be found in the target package");
 									differences = true;

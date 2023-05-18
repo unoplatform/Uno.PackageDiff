@@ -6,7 +6,6 @@
 
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-		<LangVersion>latest</LangVersion>
 		<RollForward>major</RollForward>
 
 		<PackAsTool>true</PackAsTool>

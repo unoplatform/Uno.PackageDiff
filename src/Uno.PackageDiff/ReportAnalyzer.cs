@@ -9,28 +9,27 @@ namespace Uno.PackageDiff
 {
 	public class ReportAnalyzer
 	{
-		public static bool GenerateReport(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
+		public static bool GenerateReport(TextWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
-			var ignoredTypeNames = ignoreSet?.Types.Select(t2 => t2.FullName).ToArray();
 			var isFailed = false;
 			isFailed |= ReportMissingTypes(writer, results, ignoreSet);
-			isFailed |= ReportMethods(writer, results, ignoreSet, ignoredTypeNames);
-			isFailed |= ReportEvents(writer, results, ignoreSet, ignoredTypeNames);
-			isFailed |= ReportFields(writer, results, ignoreSet, ignoredTypeNames);
-			isFailed |= ReportProperties(writer, results, ignoreSet, ignoredTypeNames);
+			isFailed |= ReportMethods(writer, results, ignoreSet);
+			isFailed |= ReportEvents(writer, results, ignoreSet);
+			isFailed |= ReportFields(writer, results, ignoreSet);
+			isFailed |= ReportProperties(writer, results, ignoreSet);
 
 			return isFailed;
 		}
 
-		private static bool ReportMissingTypes(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
+		private static bool ReportMissingTypes(TextWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
 			writer.WriteLine("### {0} missing types:", results.InvalidTypes.Length);
 			foreach(var invalidType in results.InvalidTypes)
 			{
+				var invalidTypeSignature = invalidType.ToSignature();
 				var isIgnored = ignoreSet.Types
-					.Select(t => t.FullName)
-					.Contains(invalidType.ToSignature());
+					.Any(t => t.Matches(invalidTypeSignature));
 				var strike = isIgnored
 					? "~~" : "";
 
@@ -46,7 +45,7 @@ namespace Uno.PackageDiff
 			return shouldFail;
 		}
 
-		private static bool ReportProperties(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportProperties(TextWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
 
@@ -61,10 +60,10 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var property in updatedType)
 				{
+					var propertySignature = property.ToSignature();
 					var isIgnored = ignoreSet.Properties
-						.Select(t => t.FullName)
-						.Contains(property.ToSignature())
-						|| IsDeclaringTypeIgnored(property, ignoredTypeNames);
+						.Any(t => t.Matches(propertySignature))
+						|| IsDeclaringTypeIgnored(property, ignoreSet);
 
 					var strike = isIgnored
 						? "~~" : "";
@@ -82,7 +81,7 @@ namespace Uno.PackageDiff
 			return shouldFail;
 		}
 
-		private static bool ReportFields(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportFields(TextWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
 
@@ -97,10 +96,9 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var field in updatedType)
 				{
-					var isIgnored = ignoreSet.Fields
-						.Select(t => t.FullName)
-						.Contains(field.ToSignature())
-						|| IsDeclaringTypeIgnored(field, ignoredTypeNames);
+					var fieldSignature = field.ToSignature();
+					var isIgnored = ignoreSet.Fields.Any(f => f.Matches(fieldSignature))
+						|| IsDeclaringTypeIgnored(field, ignoreSet);
 
 					var strike = isIgnored
 						? "~~" : "";
@@ -118,7 +116,7 @@ namespace Uno.PackageDiff
 			return shouldFail;
 		}
 
-		private static bool ReportMethods(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportMethods(TextWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
 
@@ -135,10 +133,8 @@ namespace Uno.PackageDiff
 				{
 					var methodSignature = method.ToSignature();
 
-					var isIgnored = ignoreSet.Methods
-						.Select(t => t.FullName)
-						.Contains(methodSignature)
-						|| IsDeclaringTypeIgnored(method, ignoredTypeNames);
+					var isIgnored = ignoreSet.Methods.Any(m => m.Matches(methodSignature))
+						|| IsDeclaringTypeIgnored(method, ignoreSet);
 
 					var strike = isIgnored
 						? "~~" : "";
@@ -156,7 +152,7 @@ namespace Uno.PackageDiff
 			return shouldFail;
 		}
 
-		private static bool ReportEvents(StreamWriter writer, ComparisonResult results, IgnoreSet ignoreSet, string[] ignoredTypeNames)
+		private static bool ReportEvents(TextWriter writer, ComparisonResult results, IgnoreSet ignoreSet)
 		{
 			var shouldFail = false;
 
@@ -171,10 +167,8 @@ namespace Uno.PackageDiff
 				writer.WriteLine("- `{0}`", updatedType.Key);
 				foreach(var evt in updatedType)
 				{
-					var isIgnored = ignoreSet.Events
-						.Select(t => t.FullName)
-						.Contains(evt.ToString())
-						|| IsDeclaringTypeIgnored(evt, ignoredTypeNames);
+					var isIgnored = ignoreSet.Events.Any(e => e.Matches(evt.ToString()))
+						|| IsDeclaringTypeIgnored(evt, ignoreSet);
 
 					var strike = isIgnored
 						? "~~" : "";
@@ -192,7 +186,7 @@ namespace Uno.PackageDiff
 			return shouldFail;
 		}
 
-		private static bool IsDeclaringTypeIgnored(IMemberDefinition memberDefinition, string[] ignoredTypes)
-			=> ignoredTypes.Contains(memberDefinition.DeclaringType.ToSignature());
+		private static bool IsDeclaringTypeIgnored(IMemberDefinition memberDefinition, IgnoreSet ignoreSet)
+			=> ignoreSet.Types.Any(t => t.Matches(memberDefinition.DeclaringType.ToSignature()));
 	}
 }

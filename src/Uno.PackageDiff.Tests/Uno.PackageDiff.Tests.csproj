@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
@@ -21,6 +21,9 @@
 	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.base.cs" />
 	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.diff.xml" />
 	  <None Remove="Sources\Given_ReportAnalyzer_When_IgnoreProperty.target.cs" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_Ignore_With_Regex.base.cs" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_Ignore_With_Regex.diff.xml" />
+	  <None Remove="Sources\Given_ReportAnalyzer_When_Ignore_With_Regex.target.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
