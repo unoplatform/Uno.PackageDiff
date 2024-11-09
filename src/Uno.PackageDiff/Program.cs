@@ -141,15 +141,34 @@ namespace Uno.PackageDiff
 
 				if(packages.Any())
 				{
-					var latestStable = (await packages.First().GetVersionsAsync())
+					var allVersions = await packages.First().GetVersionsAsync();
+					var latestStable = allVersions
 						.OrderByDescending(v => v.Version)
-						.Where(v => !v.Version.IsPrerelease)
-						.FirstOrDefault();
+						.FirstOrDefault(v => !v.Version.IsPrerelease);
 
-					if (latestStable != null)
+					var versionToDownload = latestStable;
+
+					if(latestStable == null)
+					{
+						var latestPrerelease = allVersions
+							.OrderByDescending(v => v.Version)
+							.FirstOrDefault(v => v.Version.IsPrerelease);
+
+						if(latestPrerelease != null)
+						{
+							Console.WriteLine($"Warning: No stable release found for {packagePath}. Proceeding with the latest prerelease version.");
+							versionToDownload = latestPrerelease;
+						}
+						else
+						{
+							throw new InvalidOperationException($"Unable to find any version of {packagePath} in {NuGetOrgSource.SourceUri}");
+						}
+					}
+
+					if(versionToDownload != null)
 					{
 						var packageId = packagePath.ToLowerInvariant();
-						var version = latestStable.Version.ToNormalizedString().ToLowerInvariant();
+						var version = versionToDownload.Version.ToNormalizedString().ToLowerInvariant();
 
 						// https://docs.microsoft.com/en-us/nuget/api/package-base-address-resource#download-package-content-nupkg
 						var url = $"https://api.nuget.org/v3-flatcontainer/{packageId}/{version}/{packageId}.{version}.nupkg";
