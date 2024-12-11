@@ -95,7 +95,7 @@ namespace Uno.PackageDiff
 				if (differences)
 				{
 					Console.WriteLine(@"Error : Build failed with unexpected differences. Modifications to the public API introduce binary breaking changes and should be avoided.");
-					Console.WriteLine("If these modifications were expected and intended, see https://github.com/nventive/Uno.PackageDiff#how-to-provide-an-ignore-set on how to ignore them.");
+					Console.WriteLine("If these modifications were expected and intended, see https://github.com/unoplatform/uno.packagediff#how-to-provide-an-ignore-set on how to ignore them.");
 				}
 
 				return differences ? 1 : 0;
