@@ -27,6 +27,11 @@
 		<PackageReference Include="Mono.Options" Version="6.12.0.148" />
 		<PackageReference Include="NuGet.Protocol" Version="6.3.3" />
 		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
+		
+		<PackageReference Include="Microsoft.Sbom.Targets" Version="3.1.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>
