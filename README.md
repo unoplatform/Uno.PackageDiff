@@ -7,7 +7,7 @@ published nuget package (in nuget.org) and a local NuGet package.
 
 ## Installing
 
-Run the following command from command line (requires .NET Core 2.1 installed):
+Run the following command from command line (requires .NET 8.0 installed):
 
 ```
 dotnet tool install --global Uno.PackageDiff
